@@ -20,7 +20,7 @@
 
   h1, p {
     text-align: center;
-    color: #909090;
+    color: red;
   }
 
   p {
@@ -29,11 +29,11 @@
 
   a {
     text-decoration: none;
-    color: #7b7b7b;
+    color: #990000;
   }
 
   a:hover {
-    color: #141414;
+    color: #cecece;
   }
 
   path {
@@ -48,8 +48,8 @@
   div.tooltip {
     position: absolute;
     text-align: center;
-    color: #cecece;
-    width: 120px;
+    color: #909090;
+    width: 160px;
     height: 55px;
     padding: 2px;
     font: 14px;
@@ -59,14 +59,45 @@
     pointer-events: none;
   }
 
+  .legend {
+    position: absolute;
+    top: 350px;
+  }
+
+  body {
+    color: #909090;
+  }
+
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/topojson.v2.min.js"></script>
 <script>
+// make list of possible animal choices
+var animal_dict = {
+  "Grey Wolf": "Canis lupus",
+  "Black Bear": "Ursus americanus",
+  "North American Bison": "Bison bison",
+  "Moose": "Alces alces",
+  "Cougar": "Puma concolor",
+  "Seal": "Phoca vitulina",
+  "Whale": "Megaptera novaeangliae",
+};
+
+// make list of possible animal choices
+var animals=Object.keys(animal_dict);
+// For use in the Scientific Name column then grab the Park Name
+var animal_sci=Object.values(animal_dict);
+// Make dictionary of animal
+
+
+console.log(animals);
+var color = d3.scaleOrdinal(d3["schemeCategory10"]);
+var legendHeight = d3.ticks(0, 20*(animals.length-1) , animals.length-1);
+
 // initialize width and height
 var width = window.innerWidth - 50;
-var height = window.innerHeight - 100;
+var height = window.innerHeight - 300;
 
 // Create svg
 var svg = d3.select("#map")
@@ -91,6 +122,45 @@ var div = d3.select("body")
             .append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
+
+// Legend Code from Mike Bostock: http://bl.ocks.org/mbostock/3888852
+var legend = d3.select("body").append("svg")
+      		.attr("class", "legend")
+     			.attr("width", 200)
+    			.attr("height", 20*animals.length)
+   			.selectAll("g")
+   				.data(legendHeight)
+   			.enter()
+   				.append("g")
+     			.attr("transform", function(data) {
+            return "translate(0," + data + ")";
+          });
+
+  	legend.append("rect")
+   		  .attr("width", 18)
+   		  .attr("height", 18)
+        .attr("fill", function(data, i) {
+          console.log(i)
+          return color(i);
+        });
+
+  	legend.append("text")
+  		  .data(animals)
+      	  .attr("x", 24)
+      	  .attr("y", 9)
+      	  .attr("dy", ".35em")
+      	  .text( function(animals) {
+            return animals;
+          })
+          // Add tooltip
+          .on("mouseover", function(data) {
+            console.log(data);
+
+          })
+          .on("mouseout", function(data) {
+              console.log("out");
+              console.log(data);
+          });
 
 d3.json("https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/us.json",
 function(error, us) {
@@ -136,7 +206,7 @@ d3.csv("https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e
       return (y == null ? null:  y[1]);
     })
     .attr("class", "nat-park")
-    .style("fill", "#7FFFD4")
+    .style("fill", "red")
     .style("opacity", 0.85)
     // Add tooltip
     .on("mouseover", function(data) {
@@ -146,12 +216,25 @@ d3.csv("https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e
         div.text(data.parkName)
         .style("left", (d3.event.pageX) + "px")
         .style("top", (d3.event.pageY- 7) + "px");
+
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function(data) {
         div.transition()
            .duration(300)
            .style("opacity", 0);
     })
   });
+
+  var species_csv = "https://gist.github.com/meyerpa/dd799c36fe0ee80e1160f9a44c538236/raw/5251e7794f82dafb23384794eecfc9fa3f63bcae/species.csv";
+  d3.csv(species_csv,
+      function(data) {
+        return {
+          parkName: data['Park Name'],
+          species: data['Scientific Name']
+        };
+      }, function(data) {
+        console.log(data);
+      });
+
 
 </script>

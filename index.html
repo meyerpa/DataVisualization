@@ -5,12 +5,16 @@
   </head>
 
   <body>
-    <h1>National Parks in the U.S.</h1>
+    <h1>WHERE CAN I SEE ______?</h1>
+
+    <p id="more-info">Please wait while the data loads. This may take up to a minute.</p>
+
     <p>This map's information came from the
       <a href="https://www.kaggle.com/nationalparkservice/park-biodiversity/data">
         National Park Service
       </a>
     </p>
+
     <div id="map"></div>
   </body>
 </html>
@@ -20,7 +24,6 @@
 
   h1, p {
     text-align: center;
-    color: red;
   }
 
   p {
@@ -29,11 +32,11 @@
 
   a {
     text-decoration: none;
-    color: #990000;
+    color: #cecece;
   }
 
   a:hover {
-    color: #cecece;
+    color: black;
   }
 
   path {
@@ -61,11 +64,15 @@
 
   .legend {
     position: absolute;
-    top: 350px;
+    top: 130px;
+    background-color: white;
+    border-radius: 3px;
+    opacity: 0.78;
   }
 
-  body {
-    color: #909090;
+  circle {
+    fill: black;
+    opacity: 0.85;
   }
 
 </style>
@@ -81,7 +88,17 @@ var animal_dict = {
   "Moose": "Alces alces",
   "Cougar": "Puma concolor",
   "Seal": "Phoca vitulina",
-  "Whale": "Megaptera novaeangliae",
+  "Whale": "Megaptera novaeangliae"
+};
+
+var animal_color = {
+  "Canis lupus": "#1f77b4",
+  "Ursus americanus": "#ff7f0e",
+  "Bison bison": "#2ca02c",
+  "Alces alces": "#d62728",
+  "Puma concolor": "#9467bd",
+  "Phoca vitulina": "#8c564b",
+  "Megaptera novaeangliae": "#e377c2"
 };
 
 // make list of possible animal choices
@@ -91,13 +108,49 @@ var animal_sci=Object.values(animal_dict);
 // Make dictionary of animal
 
 
-console.log(animals);
 var color = d3.scaleOrdinal(d3["schemeCategory10"]);
-var legendHeight = d3.ticks(0, 20*(animals.length-1) , animals.length-1);
+var legendHeight = d3.ticks(0, 20*(animals.length-1) , animals.length);
 
 // initialize width and height
 var width = window.innerWidth - 50;
-var height = window.innerHeight - 300;
+var height = window.innerHeight;
+
+// Slightly changed legend code from Mike Bostock:
+// http://bl.ocks.org/mbostock/3888852
+var legend = d3.select("#map").append("svg")
+      		.attr("class", "legend")
+     			.attr("width", 200)
+    			.attr("height", (20*animals.length)+5)
+          .attr("align", "center")
+   			.selectAll("g")
+   				.data(legendHeight)
+   			.enter()
+   				.append("g")
+     			.attr("transform", function(data) {
+            return "translate(0," + data + ")";
+          });
+
+legend.append("rect")
+  .data(animal_sci)
+		  .attr("width", 18)
+		  .attr("height", 18)
+    .attr("fill", function(data) { return animal_color[data]; });
+
+legend.append("text")
+	  .data(animals)
+  	  .attr("x", 24)
+  	  .attr("y", 9)
+  	  .attr("dy", ".35em")
+  	  .text( function(data) {
+        return data;
+      })
+      // Add mouseover to change dots that appear
+      .on("mouseover", function(data) {
+        showParksWith(animal_dict[data].replace(/\s+/g, ''));
+      })
+      .on("mouseout", function(data) {
+        showAllParks();
+      });
 
 // Create svg
 var svg = d3.select("#map")
@@ -110,7 +163,7 @@ var projection = d3.geoAlbersUsa()
             .translate([width/2, height/2])
             .scale(1000);
 
-// create path
+// create u.s. path
 var path = d3.geoPath()
     .projection(projection);
 
@@ -123,47 +176,36 @@ var div = d3.select("body")
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-// Legend Code from Mike Bostock: http://bl.ocks.org/mbostock/3888852
-var legend = d3.select("body").append("svg")
-      		.attr("class", "legend")
-     			.attr("width", 200)
-    			.attr("height", 20*animals.length)
-   			.selectAll("g")
-   				.data(legendHeight)
-   			.enter()
-   				.append("g")
-     			.attr("transform", function(data) {
-            return "translate(0," + data + ")";
-          });
+function showParksWith(someAnimal) {
+  // set all of the parks to be transparent
+  svg.selectAll("circle")
+    .transition()
+    .duration(500)
+    .style("opacity", 0);
 
-  	legend.append("rect")
-   		  .attr("width", 18)
-   		  .attr("height", 18)
-        .attr("fill", function(data, i) {
-          console.log(i)
-          return color(i);
-        });
+    // set the specific animal's parks to be opaque
+    svg.selectAll("."+someAnimal)
+      .transition()
+      .duration(500)
+      .style("opacity", 1);
+}
 
-  	legend.append("text")
-  		  .data(animals)
-      	  .attr("x", 24)
-      	  .attr("y", 9)
-      	  .attr("dy", ".35em")
-      	  .text( function(animals) {
-            return animals;
-          })
-          // Add tooltip
-          .on("mouseover", function(data) {
-            console.log(data);
 
-          })
-          .on("mouseout", function(data) {
-              console.log("out");
-              console.log(data);
-          });
+function showAllParks(){
+  // set all of the parks to be opaque
+  svg.selectAll("circle")
+    .transition()
+    .duration(300)
+    .style("opacity", 1);
+}
 
-d3.json("https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/us.json",
-function(error, us) {
+function dataLoaded() {
+  document.getElementById("more-info").innerHTML =
+  "Hover over one of the animals in the legend to see which parks have them.";
+}
+
+var usJson = "https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/us.json";
+d3.json(usJson, function(error, us) {
   if (error) throw error;
 
   g.selectAll("path")
@@ -178,8 +220,8 @@ function(error, us) {
       .attr("d", path);
 });
 
-d3.csv("https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e55b/raw/89d66bdbb1f4af9a7c12afd1fd0aed1d27ca5f39/parks.csv",
-    function(data) {
+var parksCsv = "https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e55b/raw/89d66bdbb1f4af9a7c12afd1fd0aed1d27ca5f39/parks.csv";
+d3.csv(parksCsv, function(data) {
       return {
         parkName: data['Park Name'],
         latitude: parseInt(data['Latitude']),
@@ -191,7 +233,7 @@ d3.csv("https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e
     .data(data)                           // bind data
   .enter()                                // for each row in data
     .append("circle")
-    .attr('id', function(data) { return data.parkName})
+    .attr('id', function(data) { return data.parkName.replace(/\s+/g, '' ) })
     .attr("r", function(data) {
       return Math.log(data.size/1000);
     })
@@ -205,9 +247,7 @@ d3.csv("https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e
       var y = projection([data.longitude, data.latitude]);
       return (y == null ? null:  y[1]);
     })
-    .attr("class", "nat-park")
-    .style("fill", "red")
-    .style("opacity", 0.85)
+    .attr("fill", "black")
     // Add tooltip
     .on("mouseover", function(data) {
       div.transition()
@@ -225,16 +265,33 @@ d3.csv("https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e
     })
   });
 
-  var species_csv = "https://gist.github.com/meyerpa/dd799c36fe0ee80e1160f9a44c538236/raw/5251e7794f82dafb23384794eecfc9fa3f63bcae/species.csv";
-  d3.csv(species_csv,
-      function(data) {
-        return {
-          parkName: data['Park Name'],
-          species: data['Scientific Name']
-        };
-      }, function(data) {
-        console.log(data);
-      });
+var species_csv = "https://gist.githubusercontent.com/meyerpa/dd799c36fe0ee80e1160f9a44c538236/raw/5251e7794f82dafb23384794eecfc9fa3f63bcae/species.csv";
+d3.csv(species_csv, function(data) {
+    return {
+      parkName: data['Park Name'].replace(/\s+/g, ''),
+      species: data['Scientific Name']
+    };
+  }, function(data) {
+    for (var i=0; i<data.length; i++) {
+      if (animal_sci.includes(data[i].species)) {
+        console.log(data[i].species);
+        console.log(animal_color[data[i].species]);
+        svg.select("#"+data[i].parkName)
+          // supposed to change the color of the circles, but isn't working
+          .attr("fill", animal_color[data[i]])
+          .attr("class",
+            // append scientific name to class
+            // this will label the obejcts for hover later
+            // null doesn't matter so I won't
+            // handle the case where it returns null
+            svg.select("#"+data[i].parkName).attr("class") + " " +
+            data[i].species.replace(/\s+/g, ''));
+
+      }
+    };
+    // update text to let user know the data was loaded
+    dataLoaded();
+});
 
 
 </script>

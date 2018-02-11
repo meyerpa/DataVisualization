@@ -80,6 +80,15 @@
     opacity: 0.85;
   }
 
+  @media (max-width: 700px) {
+    .legend {
+      position: relative;
+      top: 0px;
+      left: 50%;
+      margin-left: -90px;
+    }
+  }
+
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -118,13 +127,13 @@ var legendHeight = d3.ticks(0, 20*(animals.length-1) , animals.length);
 
 // initialize width and height
 var width = window.innerWidth - 50;
-var height = window.innerHeight;
+var height = window.innerHeight- 150;
 
 // Slightly changed legend code from Mike Bostock:
 // http://bl.ocks.org/mbostock/3888852
 var legend = d3.select("#map").append("svg")
       		.attr("class", "legend")
-     			.attr("width", 200)
+     			.attr("width", 180)
     			.attr("height", (20*animals.length)+5)
           .attr("align", "center")
    			.selectAll("g")
@@ -155,18 +164,21 @@ legend.append("text")
       })
       .on("mouseout", function(data) {
         showAllParks();
+      })
+      // add click for mobile
+      .on("click", function(data) {
+        showParksWith(animal_dict[data]);
       });
 
 // Create svg
 var svg = d3.select("#map")
             .append("svg")
-            .attr("width", width)
-            .attr("height", height);
+            .attr("width", 900)
+            .attr("height", 500)
+            .call(responsivefy);
 
 // D3 Projection
-var projection = d3.geoAlbersUsa()
-            .translate([width/2, height/2])
-            .scale(1000);
+var projection = d3.geoAlbersUsa();
 
 // create u.s. path
 var path = d3.geoPath()
@@ -211,6 +223,35 @@ function showAllParks(){
 function dataLoaded() {
   document.getElementById("more-info").innerHTML =
   "Hover over one of the animal's text in the legend to see which U.S. national parks have them.";
+}
+
+// makes svg responsivefy
+// credit Brendan Sudol https://brendansudol.com/writing/responsive-d3
+function responsivefy(svg) {
+    // get container + svg aspect ratio
+    var container = d3.select(svg.node().parentNode),
+        width = parseInt(svg.style("width")),
+        height = parseInt(svg.style("height")),
+        aspect = width / height;
+
+    // add viewBox and preserveAspectRatio properties,
+    // and call resize so that svg resizes on inital page load
+    svg.attr("viewBox", "0 0 " + width + " " + height)
+        .attr("perserveAspectRatio", "xMinYMid")
+        .call(resize);
+
+    // to register multiple listeners for same event type,
+    // you need to add namespace, i.e., 'click.foo'
+    // necessary if you call invoke this function for multiple svgs
+    // api docs: https://github.com/mbostock/d3/wiki/Selections#on
+    d3.select(window).on("resize." + container.attr("id"), resize);
+
+    // get width of container and resize svg to fit it
+    function resize() {
+        var targetWidth = parseInt(container.style("width"));
+        svg.attr("width", targetWidth);
+        svg.attr("height", Math.round(targetWidth / aspect));
+    }
 }
 
 // load in U.S. data and display map
@@ -263,7 +304,7 @@ d3.csv(parksCsv, function(data) {
     .on("mouseover", function(data) {
       div.transition()
         .duration(300)
-        .style("opacity", 0.97);
+        .style("opacity", 0.95);
         div.text(data.parkName)
         .style("left", (d3.event.pageX) + "px")
         .style("top", (d3.event.pageY- 7) + "px");
@@ -273,6 +314,16 @@ d3.csv(parksCsv, function(data) {
         div.transition()
            .duration(300)
            .style("opacity", 0);
+    })
+    // add tooltip click for mobile
+    .on("mouseover", function(data) {
+      div.transition()
+        .duration(300)
+        .style("opacity", 0.95);
+        div.text(data.parkName)
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY- 7) + "px");
+
     })
   });
 

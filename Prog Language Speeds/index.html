@@ -9,7 +9,8 @@
 
     <p id="more-info">Please wait while the data loads. This may take up to a minute.</p>
 
-    <div id="chart"></div>
+    <div id="chart">
+    </div>
 
     <p>This map's information came from the
       <a href="https://benchmarksgame.alioth.debian.org/">
@@ -38,125 +39,31 @@
   a:hover {
     color: black;
   }
-
-  path {
-    fill: #cecece;
-    stroke: white;
-  }
-
-  /*
-  Followed http://www.d3noob.org/2013/01/adding-tooltips-to-d3js-graph.html
-  tutorial while creating the tooltip
-  */
-  div.tooltip {
-    position: absolute;
-    text-align: center;
-    color: #909090;
-    width: 160px;
-    height: 55px;
-    padding: 2px;
-    font: 14px;
-    background: white;
-    border: 0px;
-    border-radius: 4px;
-    pointer-events: none;
-  }
-
-  .legend {
-    position: absolute;
-    top: 170px;
-    background-color: white;
-    border-radius: 3px;
-    opacity: 0.78;
-  }
-
-  /* Have overlap between text and color box*/
-  text {
-    margin-left: 24px;
-  }
-
-  circle {
-    fill: black;
-    opacity: 0.85;
-  }
-
-  @media (max-width: 700px) {
-    .legend {
-      position: relative;
-      top: 0px;
-      left: 50%;
-      margin-left: -90px;
-    }
-  }
-
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/topojson.v2.min.js"></script>
 <script>
-var color = d3.scaleOrdinal(d3["schemeCategory10"]);
-var legendHeight = d3.ticks(0, 20*(animals.length-1) , animals.length);
+
+// Followed Mike Bostock’s example of donut multiples closely
+// source: https://bl.ocks.org/mbostock/3888852
+var color = d3.scaleOrdinal()
+    .range(["#ffff99", "#ccff99", "#99ff99", "#99ffff", "#99ccff", "#d580ff", "#e6ccff", "#ff99ff", "#ff9999", "#ffcc99"]);
 
 // initialize width and height
 var width = window.innerWidth;
 var height = window.innerHeight;
 
-// Slightly changed legend code from Mike Bostock:
-// http://bl.ocks.org/mbostock/3888852
-var legend = d3.select("#map").append("svg")
-      		.attr("class", "legend")
-     			.attr("width", 180)
-    			.attr("height", (20*animals.length)+5)
-          .attr("align", "center")
-   			.selectAll("g")
-   				.data(legendHeight)
-   			.enter()
-   				.append("g")
-     			.attr("transform", function(data) {
-            return "translate(0," + data + ")";
-          });
+var radius = 100,
+    padding = 50;
 
-legend.append("rect")
-  .data(lines)
-		  .attr("width", 18)
-		  .attr("height", 18)
-    .attr("fill", function(data, i) { return color(i); });
+var arc = d3.arc()
+    .outerRadius(radius)
+    .innerRadius(radius - 45);
 
-legend.append("text")
-	  .data(lines)
-  	  .attr("x", 24)
-  	  .attr("y", 9)
-  	  .attr("dy", ".35em")
-  	  .text( function(data) {
-        return data;
-      })
-      // Add mouseover to change dots that appear
-      .on("mouseover", function(data) {
-        //TODO: implement
-      })
-      .on("mouseout", function(data) {
-        //TODO: implement
-      })
-      // add click for mobile
-      .on("click", function(data) {
-        //TODO: implement
-      });
-
-// Create svg
-var svg = d3.select("#map")
-            .append("svg")
-            .attr("width", 900)
-            .attr("height", 500)
-            .call(responsivefy);
-
-// allows objects to be in front of map
-var g = svg.append("g");
-
-// Add tooltip
-var div = d3.select("body")
-            .append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0);
+var pie = d3.pie()
+    .sort(null)
+    .value(function(d) { return d.time; });
 
 // change text to show that the data loaded.
 function dataLoaded() {
@@ -199,78 +106,74 @@ function responsivefy(svg) {
     }
 }
 
-var x = d3.scaleTime().range([0, width]),
-    y = d3.scaleLinear().range([height, 0]),
-    z = d3.scaleOrdinal(d3.schemeCategory10);
-
-var line = d3.line()
-    .curve(d3.curveBasis)
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.temperature); });
-
 // load in parks data to display each national park
-var speedsCsv = "https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e55b/raw/89d66bdbb1f4af9a7c12afd1fd0aed1d27ca5f39/parks.csv";
+var speedsCsv = "https://gist.githubusercontent.com/meyerpa/d49344c5b38b3ffc8fada78207faac4d/raw/d9d403e01a63f990242410513b37b9f2303c3b95/speeds.csv";
 d3.csv(speedsCsv, function(data) {
       return {
-        language: data['Language'],
-        n-body: parseInt(data['n-body']),
-        spectral-norm: parseInt(data['spectral-norm']),
+        language: data['Language (simple)'],
+        n_body: parseInt(data['n-body']),
+        spectral_norm: parseInt(data['spectral-norm']),
         pidigits: parseInt(data['pidigits']),
-        fannkuch-redux: parseInt(data['fannkuch-redux']),
-        reverse-complement: parseInt(data['reverse-complement']),
-        k-nucleotide: parseInt(data['k-nucleotide']),
+        fannkuch_redux: parseInt(data['fannkuch-redux']),
+        reverse_complement: parseInt(data['reverse-complement']),
+        k_nucleotide: parseInt(data['k-nucleotide']),
         fasta: parseInt(data['fasta']),
-        binary-trees: parseInt(data['binary-trees']),
+        binary_trees: parseInt(data['binary-trees']),
         mandelbrot: parseInt(data['mandelbrot']),
-        regex-redux: parseInt(data['regex-redux']),
+        regex_redux: parseInt(data['regex-redux']),
       };
     }, function(data) {
-  var cities = data.columns.slice(1).map(function(id) {
-    return {
-      id: id,
-      values: data.map(function(d) {
-        return {date: d.date, temperature: d[id]};
-      })
-    };
+  color.domain(d3.keys(data[0]).filter(function(key) {
+    return (key !== "language" && key !== "Language (simple)");
+  }));
+
+  data.forEach(function(d) {
+    d.tests = color.domain().map(function(name) {
+      return {name: name, time: +d[name]};
+    });
   });
 
-  x.domain(d3.extent(data, function(d) { return data.date; }));
+  var legend = d3.select("#chart").append("svg")
+      .attr("class", "legend")
+      .attr("width", radius * 2)
+      .attr("height", radius * 2)
+    .selectAll("g")
+      .data(color.domain().slice().reverse())
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
 
-  y.domain([
-    d3.min(cities, function(c) { return d3.min(c.values, function(d) { return d.temperature; }); }),
-    d3.max(cities, function(c) { return d3.max(c.values, function(d) { return d.temperature; }); })
-  ]);
+  legend.append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
 
-  z.domain(cities.map(function(c) { return c.id; }));
+  legend.append("text")
+      .attr("x", 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .text(function(d) { return d; });
 
-  svg.selectAll("circle")                 // create virtual circle template
-    .data(data)                           // bind data
-  .enter()                                // for each row in data
-    .attr("fill", "black")
-    // Add tooltip
-    .on("mouseover", function(data) {
-      div.transition()
-        .duration(300)
-        .style("opacity", 0.95);
-        div.text(data.parkName)
-        .style("left", (d3.event.pageX) + "px")
-        .style("top", (d3.event.pageY- 7) + "px");
+  var svg = d3.select("#chart").selectAll(".pie")
+      .data(data)
+    .enter().append("svg")
+      .attr("class", "pie")
+      .attr("width", radius * 2)
+      .attr("height", radius * 2)
+    .append("g")
+      .attr("transform", "translate(" + radius + "," + radius + ")");
 
-    })
-    .on("mouseout", function(data) {
-        div.transition()
-           .duration(300)
-           .style("opacity", 0);
-    })
-    // add tooltip click for mobile
-    .on("click", function(data) {
-      div.transition()
-        .duration(300)
-        .style("opacity", 0.95);
-        div.text(data.parkName)
-        .style("left", (d3.event.pageX) + "px")
-        .style("top", (d3.event.pageY- 7) + "px");
-    })
+  svg.selectAll(".arc")
+      .data(function(d) { return pie(d.tests); })
+    .enter().append("path")
+      .attr("class", "arc")
+      .attr("d", arc)
+      .style("fill", function(d) { return color(d.data.name); });
+
+  svg.append("text")
+      .attr("dy", ".35em")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.language; });
+
     // Update text to give user idea about what they are supposed to do.
     dataLoaded();
   });

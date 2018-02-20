@@ -130,7 +130,6 @@ var animal_sci=Object.values(animal_dict);
 
 
 var color = d3.scaleOrdinal(d3["schemeCategory10"]);
-var legendHeight = d3.ticks(0, 20*(animals.length-1) , animals.length);
 
 // initialize width and height
 var width = window.innerWidth;
@@ -144,11 +143,22 @@ var legend = d3.select("#map").append("svg")
     			.attr("height", (20*animals.length)+5)
           .attr("align", "center")
    			.selectAll("g")
-   				.data(legendHeight)
+   				.data(animals)
    			.enter()
    				.append("g")
-     			.attr("transform", function(data) {
-            return "translate(0," + data + ")";
+     			.attr("transform", function(data, i) {
+            return "translate(0," + 20*i + ")";
+          })
+          // Add mouseover to change dots that appear
+          .on("mouseover", function(data) {
+            showParksWith(animal_dict[data]);
+          })
+          .on("mouseout", function(data) {
+            showAllParks();
+          })
+          // add click for mobile
+          .on("click", function(data) {
+            showParksWith(animal_dict[data]);
           });
 
 legend.append("rect")
@@ -321,7 +331,6 @@ d3.csv(parksCsv, function(data) {
         div.text(data.parkName)
         .style("left", (d3.event.pageX) + "px")
         .style("top", (d3.event.pageY- 7) + "px");
-
     })
     .on("mouseout", function(data) {
         div.transition()

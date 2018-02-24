@@ -199,7 +199,7 @@ d3.json(usJson, function(error, us) {
 });
 
 // load in parks data to display each national park
-var parksCsv = "https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e55b/raw/89d66bdbb1f4af9a7c12afd1fd0aed1d27ca5f39/parks.csv";
+var parksCsv = "https://gist.githubusercontent.com/meyerpa/1a5b1c3388e73ce2870c70fe2d42e55b/raw/6543d72cf302596850364b24b532bd6d0ab92923/parks.csv";
 d3.csv(parksCsv, function(data) {
       return {
         parkName: data['Park Name'],

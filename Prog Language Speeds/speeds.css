@@ -1,0 +1,46 @@
+h1, p {
+  text-align: center;
+}
+
+p {
+  font-size: 20px;
+}
+
+a {
+  text-decoration: none;
+  color: #909090;
+}
+
+a:hover {
+  color: black;
+}
+
+.arc {
+  stroke: white;
+}
+
+.arc text {
+  font-size: 10px;
+  text-anchor: middle;
+}
+
+.tooltip {
+  position: absolute;
+  text-align: center;
+  padding: 2px;
+  font: 14px;
+  background: white;
+  border: 0px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+lang-tooltip {
+  width: 110px;
+  height: 40px;
+}
+
+test-tooltip {
+  width: 200px;
+  height: 40px;
+}

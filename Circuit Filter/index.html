@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+  <head>
+    <link href="filter.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <h1>Maximum Power in a Circuit</h1>
+
+    <p id="more-info">Please wait while the data loads. This may take up to a minute.</p>
+    <!--Input information-->
+    <h2>Enter information to update circuit</h2>
+
+    <div>
+      <text>Select the first element</text>
+      <select onchange="updateFirstElement(this.value);">
+        <option value="resistor">Resistor</option>
+        <option value="capacitor">Capacitor</option>
+        <option value="inductor">Inductor</option>
+      </select>
+
+      <text>Select the load element</text>
+      <select onchange="updateLoadElement(this.value);">
+        <option value="resistor">Resistor</option>
+        <option value="capacitor">Capacitor</option>
+        <option value="inductor">Inductor</option>
+      </select>
+
+      <form name="myform">
+          <input type="number" id="voltage-input" placeholder="Enter Battery Voltage" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+          <input type="number" id="resistance-input" placeholder="Enter First Resistance" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+          <input name="Submit"  type="button" value="Update" onClick="data = handleClick();">
+      </form>
+    </div>
+
+    <div id="circuit">
+      <h2>Schematic</h2>
+      <svg id="schematic"></svg>
+    </div>
+
+
+    <div id="chart">
+      <h2>Power Through Load</h2>
+      <svg id="chart-svg"></svg>
+    </div>
+  </body>
+</html>
+
+<script src="../d3.min.js"></script>
+<script src="filter.js"></script>

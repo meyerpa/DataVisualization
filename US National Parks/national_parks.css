@@ -1,0 +1,66 @@
+h1, p {
+  text-align: center;
+}
+
+p {
+  font-size: 20px;
+}
+
+a {
+  text-decoration: none;
+  color: #909090;
+}
+
+a:hover {
+  color: black;
+}
+
+path {
+  fill: #cecece;
+  stroke: white;
+}
+
+/*
+Followed http://www.d3noob.org/2013/01/adding-tooltips-to-d3js-graph.html
+tutorial while creating the tooltip
+*/
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  color: #909090;
+  width: 160px;
+  height: 55px;
+  padding: 2px;
+  font: 14px;
+  background: white;
+  border: 0px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.legend {
+  position: absolute;
+  top: 170px;
+  background-color: white;
+  border-radius: 3px;
+  opacity: 0.78;
+}
+
+/* Have overlap between text and color box*/
+text {
+  margin-left: 24px;
+}
+
+circle {
+  fill: black;
+  opacity: 0.85;
+}
+
+@media (max-width: 700px) {
+  .legend {
+    position: relative;
+    top: 0px;
+    left: 50%;
+    margin-left: -90px;
+  }
+}

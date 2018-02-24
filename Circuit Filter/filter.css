@@ -1,0 +1,56 @@
+
+h1, p {
+  text-align: center;
+}
+
+p {
+  font-size: 20px;
+}
+
+a {
+  text-decoration: none;
+  color: #909090;
+}
+
+a:hover {
+  color: black;
+}
+
+.circuit-element {
+  stroke: black;
+  stroke-width: 5;
+  fill: none;
+}
+
+.schematic-wire {
+  stroke: black;
+  stroke-width: 3;
+  fill: none;
+  stroke-dasharray: 3,3;
+}
+
+.hover-line {
+  stroke: red;
+  stroke-width: 3px;
+  stroke-dasharray: 3,3;
+}
+
+circle {
+  stroke: red;
+  stroke-width: 5px;
+  fill: white;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+@media (max-width: 700px) {
+  .legend {
+    position: relative;
+    top: 0px;
+    left: 50%;
+    margin-left: -90px;
+  }
+}
